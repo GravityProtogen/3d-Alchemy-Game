@@ -31,7 +31,7 @@ AnimatorController:
   m_Name: MainCharacterController
   serializedVersion: 6
   m_AnimatorParameters:
-  - m_Name: RunningSpeed
+  - m_Name: SneakingSpeed
     m_Type: 1
     m_DefaultFloat: 0
     m_DefaultInt: 0
@@ -83,7 +83,7 @@ BlendTree:
     m_CycleOffset: 0
     m_DirectBlendParameter: RunningSpeed
     m_Mirror: 0
-  m_BlendParameter: RunningSpeed
+  m_BlendParameter: SneakingSpeed
   m_BlendParameterY: Blend
   m_MinThreshold: 0
   m_MaxThreshold: 1
