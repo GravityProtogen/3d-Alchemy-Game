@@ -11,9 +11,38 @@ public class DungeonBuilderEditor : Editor
         DungeonBuilder builder =
             (DungeonBuilder)target;
 
-        if (GUILayout.Button("Spawn Corridor"))
+        GUILayout.Space(10);
+
+        if (GUILayout.Button("Spawn Straight"))
         {
-            SpawnCorridor(builder);
+            SpawnPiece(
+                builder,
+                builder.straightPrefab
+            );
+        }
+
+        if (GUILayout.Button("Spawn Corner"))
+        {
+            SpawnPiece(
+                builder,
+                builder.cornerPrefab
+            );
+        }
+
+        if (GUILayout.Button("Spawn Room"))
+        {
+            SpawnPiece(
+                builder,
+                builder.roomPrefab
+            );
+        }
+
+        if (GUILayout.Button("Spawn T Junction"))
+        {
+            SpawnPiece(
+                builder,
+                builder.tJunctionPrefab
+            );
         }
     }
 
@@ -38,7 +67,7 @@ public class DungeonBuilderEditor : Editor
         }
     }
 
-    void SpawnCorridor(DungeonBuilder builder)
+    void SpawnPiece(DungeonBuilder builder, GameObject prefab)
     {
         ConnectionPoint target =
             builder.targetConnection;
@@ -49,15 +78,15 @@ public class DungeonBuilderEditor : Editor
             return;
         }
 
-        if (builder.corridorPrefab == null)
+        if (prefab == null)
         {
-            Debug.Log("Assign a Corridor Prefab.");
+            Debug.Log("Assign a Prefab.");
             return;
         }
 
         GameObject corridor =
             (GameObject)PrefabUtility.InstantiatePrefab(
-                builder.corridorPrefab
+                prefab
             );
 
         DungeonPiece piece =
@@ -66,42 +95,80 @@ public class DungeonBuilderEditor : Editor
         if (piece == null)
         {
             Debug.Log("Corridor prefab is missing DungeonPiece.");
+            DestroyImmediate(corridor);
             return;
         }
 
-        ConnectionDirection neededDirection =
-            Opposite(target.direction);
+        if (piece.connections.Count == 0)
+            {
+                Debug.Log("Piece has no connections.");
 
-        ConnectionPoint corridorConnection = null;
+                DestroyImmediate(corridor);
+                return;
+            }
+
+            ConnectionPoint corridorConnection = null;
+
+            ConnectionDirection neededDirection =
+                Opposite(target.direction);
+
+            foreach (var c in piece.connections)
+            {
+                if (c.direction == neededDirection)
+                {
+                    corridorConnection = c;
+                    break;
+                }
+            }
+            if (corridorConnection == null)
+            {
+                corridorConnection = piece.connections[0];
+
+                Debug.Log(
+                    "Fallback connection used: " +
+                    corridorConnection.name
+                );
+            }
+
+        // ROTATE TO FACE THE TARGET CONNECTION
+
+        Quaternion rotation =
+        Quaternion.FromToRotation(
+            corridorConnection.transform.forward,
+            -target.transform.forward
+        );
+
+        corridor.transform.rotation =
+            rotation * corridor.transform.rotation;
+
+        // SNAP AFTER ROTATION
+
+        Vector3 delta =
+        target.transform.position -
+        corridorConnection.transform.position;
+
+        corridor.transform.position += delta;
+
+        // AUTO-SELECT NEXT FREE CONNECTION
 
         foreach (var c in piece.connections)
         {
-            if (c.direction == neededDirection)
+            if (c != corridorConnection)
             {
-                corridorConnection = c;
+                builder.targetConnection = c;
+
+                Debug.Log(
+                    "Next target: " +
+                    c.name +
+                    " direction=" +
+                    c.direction
+                );
+
                 break;
             }
         }
 
-        if (corridorConnection == null)
-        {
-            Debug.Log(
-                "No connection found with direction: " +
-                neededDirection
-            );
-            return;
-        }
-
-        Vector3 offset =
-            corridor.transform.position -
-            corridorConnection.transform.position;
-        Debug.Log("Target Position: " + target.transform.position);
-        Debug.Log("Corridor Connection Position: " + corridorConnection.transform.position);
-        Debug.Log("Corridor Pivot Position: " + corridor.transform.position);
-        Debug.Log("Offset: " + offset);
-        corridor.transform.position =
-            target.transform.position +
-            offset;
+        EditorUtility.SetDirty(builder);
 
         Debug.Log(
             "Snapped using: " +
