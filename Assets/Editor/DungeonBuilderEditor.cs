@@ -204,7 +204,7 @@ public class DungeonBuilderEditor : Editor
 
         if (piece == null)
         {
-            Debug.Log("Corridor prefab is missing DungeonPiece.");
+            Debug.Log("Prefab is missing DungeonPiece.");
             DestroyImmediate(corridor);
             return;
         }
