@@ -4,73 +4,183 @@ using UnityEngine;
 [CustomEditor(typeof(DungeonBuilder))]
 public class DungeonBuilderEditor : Editor
 {
+    // GUI do Inspetor
     public override void OnInspectorGUI()
     {
-        DrawDefaultInspector();
-
         DungeonBuilder builder =
             (DungeonBuilder)target;
 
+        serializedObject.Update();
+
+        EditorGUILayout.PropertyField(
+            serializedObject.FindProperty("piecePrefabs")
+        );
+
+        EditorGUILayout.PropertyField(
+            serializedObject.FindProperty("targetPiece")
+        );
+        DrawTargetConnectionDropdown(
+            builder
+        );
+
         GUILayout.Space(10);
 
-        if (GUILayout.Button("Spawn Straight"))
+        DrawPrefabDropdown(builder);
+
+        GUILayout.Space(10);
+
+        if (GUILayout.Button("Spawn Prefab"))
         {
+            if (builder.piecePrefabs.Count == 0)
+            {
+                Debug.Log("No prefabs assigned.");
+                return;
+            }
+
             SpawnPiece(
                 builder,
-                builder.straightPrefab
+                builder.piecePrefabs[
+                    builder.selectedPrefabIndex
+                ]
             );
         }
 
-        if (GUILayout.Button("Spawn Corner"))
-        {
-            SpawnPiece(
-                builder,
-                builder.cornerPrefab
-            );
-        }
+        serializedObject.ApplyModifiedProperties();
 
-        if (GUILayout.Button("Spawn Room"))
+        if (GUI.changed)
         {
-            SpawnPiece(
-                builder,
-                builder.roomPrefab
-            );
-        }
-
-        if (GUILayout.Button("Spawn T Junction"))
-        {
-            SpawnPiece(
-                builder,
-                builder.tJunctionPrefab
-            );
+            EditorUtility.SetDirty(builder);
         }
     }
-
-    ConnectionDirection Opposite(ConnectionDirection dir)
+    void DrawPrefabDropdown( DungeonBuilder builder )
     {
-        switch (dir)
+        if (builder.piecePrefabs.Count == 0)
+            return;
+
+        string[] prefabNames =
+            new string[
+                builder.piecePrefabs.Count
+            ];
+
+        for (int i = 0;
+            i < builder.piecePrefabs.Count;
+            i++)
         {
-            case ConnectionDirection.Norte:
-                return ConnectionDirection.Sul;
-
-            case ConnectionDirection.Sul:
-                return ConnectionDirection.Norte;
-
-            case ConnectionDirection.Leste:
-                return ConnectionDirection.Oeste;
-
-            case ConnectionDirection.Oeste:
-                return ConnectionDirection.Leste;
-
-            default:
-                return dir;
+            prefabNames[i] =
+                builder.piecePrefabs[i] != null
+                ? builder.piecePrefabs[i].name
+                : "Missing Prefab";
         }
+
+        builder.selectedPrefabIndex =
+            EditorGUILayout.Popup(
+                "Prefab",
+                builder.selectedPrefabIndex,
+                prefabNames
+            );
+
+        GameObject selectedPrefab =
+            builder.piecePrefabs[
+                builder.selectedPrefabIndex
+            ];
+
+        if (selectedPrefab == null)
+            return;
+
+        DungeonPiece piece =
+            selectedPrefab.GetComponent<DungeonPiece>();
+
+        if (piece == null)
+            return;
+
+        piece.RefreshConnections();
+
+        string[] connectionNames =
+            new string[
+                piece.connections.Count
+            ];
+
+        for (int i = 0;
+            i < piece.connections.Count;
+            i++)
+        {
+            connectionNames[i] =
+                piece.connections[i].name +
+                " (" +
+                piece.connections[i].direction +
+                ")";
+        }
+
+        builder.selectedConnectionIndex =
+            EditorGUILayout.Popup(
+                "Connection",
+                builder.selectedConnectionIndex,
+                connectionNames
+            );
+    }
+    void DrawTargetConnectionDropdown( DungeonBuilder builder )
+    {
+        if (builder.targetPiece == null)
+            return;
+
+        builder.targetPiece.RefreshConnections();
+
+        if (builder.targetPiece.connections.Count == 0)
+            return;
+
+        string[] connectionNames =
+            new string[
+                builder.targetPiece.connections.Count
+            ];
+
+        for (int i = 0;
+            i < builder.targetPiece.connections.Count;
+            i++)
+        {
+            ConnectionPoint cp =
+                builder.targetPiece.connections[i];
+
+            connectionNames[i] =
+                cp.name +
+                " (" +
+                cp.direction +
+                ")";
+        }
+
+        builder.targetConnectionIndex =
+            EditorGUILayout.Popup(
+                "Target Connection",
+                builder.targetConnectionIndex,
+                connectionNames
+            );
     }
 
     void SpawnPiece(DungeonBuilder builder, GameObject prefab)
     {
+        if (builder.piecePrefabs.Count == 0)
+        {
+            Debug.Log("No prefabs assigned.");
+            return;
+        }
+        if (builder.targetPiece == null)
+        {
+            Debug.Log("Assign a Target Piece.");
+            return;
+        }
+
+        if (
+            builder.targetConnectionIndex >=
+            builder.targetPiece.connections.Count
+        )
+        {
+            Debug.Log("Invalid target connection.");
+            return;
+        }
+
         ConnectionPoint target =
-            builder.targetConnection;
+            builder.targetPiece.connections[
+                builder.targetConnectionIndex
+            ];
 
         if (target == null)
         {
@@ -107,28 +217,17 @@ public class DungeonBuilderEditor : Editor
                 return;
             }
 
-            ConnectionPoint corridorConnection = null;
-
-            ConnectionDirection neededDirection =
-                Opposite(target.direction);
-
-            foreach (var c in piece.connections)
-            {
-                if (c.direction == neededDirection)
+            if (builder.selectedConnectionIndex >= piece.connections.Count)
                 {
-                    corridorConnection = c;
-                    break;
+                    Debug.Log("Invalid connection index.");
+                    DestroyImmediate(corridor);
+                    return;
                 }
-            }
-            if (corridorConnection == null)
-            {
-                corridorConnection = piece.connections[0];
 
-                Debug.Log(
-                    "Fallback connection used: " +
-                    corridorConnection.name
-                );
-            }
+                ConnectionPoint corridorConnection =
+                    piece.connections[
+                        builder.selectedConnectionIndex
+                    ];
 
         // ROTATE TO FACE THE TARGET CONNECTION
 
@@ -148,27 +247,6 @@ public class DungeonBuilderEditor : Editor
         corridorConnection.transform.position;
 
         corridor.transform.position += delta;
-
-        // AUTO-SELECT NEXT FREE CONNECTION
-
-        foreach (var c in piece.connections)
-        {
-            if (c != corridorConnection)
-            {
-                builder.targetConnection = c;
-
-                Debug.Log(
-                    "Next target: " +
-                    c.name +
-                    " direction=" +
-                    c.direction
-                );
-
-                break;
-            }
-        }
-
-        EditorUtility.SetDirty(builder);
 
         Debug.Log(
             "Snapped using: " +

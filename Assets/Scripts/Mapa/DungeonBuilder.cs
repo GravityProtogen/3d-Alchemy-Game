@@ -1,11 +1,18 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 public class DungeonBuilder : MonoBehaviour
 {
-    public GameObject straightPrefab;
-    public GameObject cornerPrefab;
-    public GameObject roomPrefab;
-    public GameObject tJunctionPrefab;
+    public List<GameObject> piecePrefabs = new();
 
-    public ConnectionPoint targetConnection;
+    public DungeonPiece targetPiece;
+
+    [HideInInspector]
+    public int targetConnectionIndex;
+
+    [HideInInspector]
+    public int selectedPrefabIndex;
+
+    [HideInInspector]
+    public int selectedConnectionIndex;
 }
