@@ -5,6 +5,8 @@ public class EnemyPatrol : MonoBehaviour
 {
     public Transform[] patrolPoints;
 
+    public float rotationSpeed = 180f;
+    public float turnThreshold = 5f;
     public float moveSpeed = 3f;
     public float waitTime = 2f;
 
@@ -38,7 +40,24 @@ public class EnemyPatrol : MonoBehaviour
         lookDirection.y = 0;
 
         if (lookDirection != Vector3.zero)
-            transform.rotation = Quaternion.LookRotation(lookDirection);
+                {
+                    Quaternion targetRotation = Quaternion.LookRotation(lookDirection);
+
+                    transform.rotation = Quaternion.RotateTowards(
+                        transform.rotation,
+                        targetRotation,
+                        rotationSpeed * Time.deltaTime
+                    );
+
+                    float angle = Quaternion.Angle(
+                        transform.rotation,
+                        targetRotation
+                    );
+
+                    // Only move when mostly facing target
+                    if (angle > turnThreshold)
+                        return;
+                }
 
         if (Vector3.Distance(transform.position, targetPosition) < 0.1f)
         {
