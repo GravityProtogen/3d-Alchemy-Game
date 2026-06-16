@@ -13,8 +13,14 @@ public class CardManager : MonoBehaviour
 
     public void SelectCard(CardType card)
     {
-        selectedCard = card;
+        if (selectedCard == card)
+        {
+            selectedCard = CardType.None;
+            Debug.Log("Deselected: " + card);
+            return;
+        }
 
+        selectedCard = card;
         Debug.Log("Selected: " + card);
     }
 }
