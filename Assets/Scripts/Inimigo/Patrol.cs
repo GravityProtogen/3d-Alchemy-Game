@@ -10,6 +10,8 @@ public class EnemyPatrol : MonoBehaviour
     public float moveSpeed = 3f;
     public float waitTime = 2f;
 
+    bool distracted = false;
+    Vector3 distractionPoint;
     int currentPoint = 0;
     int direction = 1;
 
@@ -17,6 +19,11 @@ public class EnemyPatrol : MonoBehaviour
 
     void Update()
     {
+        if (distracted)
+        {
+            LookAtDistraction();
+            return;
+        }
         if (patrolPoints.Length == 0 || waiting)
             return;
 
@@ -91,5 +98,39 @@ public class EnemyPatrol : MonoBehaviour
         currentPoint += direction;
 
         waiting = false;
+    }
+    public void Distract(Vector3 point, float duration)
+    {
+        Debug.Log(name + " distracted");
+        StartCoroutine(DistractRoutine(point, duration));
+    }
+    IEnumerator DistractRoutine(Vector3 point, float duration)
+    {
+        distracted = true;
+
+        distractionPoint = point;
+
+        yield return new WaitForSeconds(duration);
+
+        distracted = false;
+    }
+    void LookAtDistraction()
+    {
+        Vector3 direction =
+            distractionPoint - transform.position;
+
+        direction.y = 0;
+
+        if (direction.sqrMagnitude < 0.01f)
+            return;
+
+        Quaternion targetRotation =
+            Quaternion.LookRotation(direction);
+
+        transform.rotation = Quaternion.RotateTowards(
+            transform.rotation,
+            targetRotation,
+            rotationSpeed * Time.deltaTime
+        );
     }
 }

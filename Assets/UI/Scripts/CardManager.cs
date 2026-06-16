@@ -23,4 +23,8 @@ public class CardManager : MonoBehaviour
         selectedCard = card;
         Debug.Log("Selected: " + card);
     }
+    public void ClearSelection()
+    {
+        selectedCard = CardType.None;
+    }
 }

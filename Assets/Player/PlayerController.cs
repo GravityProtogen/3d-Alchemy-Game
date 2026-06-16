@@ -12,6 +12,11 @@ public class PlayerController : MonoBehaviour
     public Transform aoePreview;
     public float oxygenRadius = 2f;
 
+    public GameObject oxygenGustPrefab;
+    public GameObject hydrogenExplosionPrefab;
+
+    public float hydrogenTargetRadius = 2f;
+
     private Vector2 move;
     private Animator animator;
 
@@ -113,18 +118,24 @@ public class PlayerController : MonoBehaviour
                 targetDistance,
                 obstacleLayers))
             {
-                Debug.Log("HIT WALL: " + hit.collider.name);
                 finalTarget = hit.point - direction * 0.2f;
             }
             aimTarget.position = finalTarget;
             aoePreview.position =
             finalTarget + Vector3.up * 0.02f;
 
+            float previewRadius = oxygenRadius;
+
+            if (CardManager.Instance.selectedCard == CardType.Hydrogen)
+            {
+                previewRadius = hydrogenTargetRadius;
+            }
+
             aoePreview.localScale =
                 new Vector3(
-                    oxygenRadius * 2f,
+                    previewRadius * 2f,
                     0.01f,
-                    oxygenRadius * 2f
+                    previewRadius * 2f
                 );
             
             if (direction.sqrMagnitude > 0.01f)
@@ -132,11 +143,13 @@ public class PlayerController : MonoBehaviour
                 transform.rotation = Quaternion.LookRotation(direction);
             }
             DrawAimArc();
-            Debug.DrawRay(
-            rayOrigin,
-            direction * targetDistance,
-            Color.red
-            );
+            if (
+                Mouse.current.leftButton.wasPressedThisFrame &&
+                !UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject()
+            )
+            {
+                CastSelectedCard();
+            }
         }
     }
     void DrawAimArc()
@@ -159,6 +172,61 @@ public class PlayerController : MonoBehaviour
             point.y += Mathf.Sin(t * Mathf.PI) * arcHeight;
 
             aimLine.SetPosition(i, point);
+        }
+    }
+    void CastHydrogen()
+    {
+        Collider[] hits =
+            Physics.OverlapSphere(
+                aimTarget.position,
+                hydrogenTargetRadius
+            );
+
+        Debug.Log("Found colliders: " + hits.Length);
+
+        foreach (Collider hit in hits)
+        {
+            Debug.Log("Hit: " + hit.name);
+
+            TorchObject torch =
+                hit.GetComponentInParent<TorchObject>();
+
+            if (torch != null)
+            {
+                Debug.Log("TORCH FOUND!");
+
+                Instantiate(
+                    hydrogenExplosionPrefab,
+                    torch.transform.position,
+                    Quaternion.identity
+                );
+
+                break;
+            }
+        }
+    }
+    void CastSelectedCard()
+    {
+        switch (CardManager.Instance.selectedCard)
+        {
+            case CardType.Oxygen:
+
+                Instantiate(
+                    oxygenGustPrefab,
+                    aimTarget.position,
+                    Quaternion.identity
+                );
+
+                CardManager.Instance.ClearSelection();
+
+                break;
+            case CardType.Hydrogen:
+
+                CastHydrogen();
+
+                CardManager.Instance.ClearSelection();
+                
+                break;
         }
     }
 }

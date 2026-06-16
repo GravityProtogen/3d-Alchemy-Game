@@ -3,6 +3,7 @@ using TMPro;
 
 public class EnemyVision : MonoBehaviour
 {
+    bool stunned = false;
     Vector3 originalScale;
     public TMP_Text alertText;
     bool playerAlreadyDetected = false;
@@ -20,8 +21,25 @@ public class EnemyVision : MonoBehaviour
     [Header("Layers")]
     public LayerMask obstacleMask;
 
+    public void Stun(float duration)
+    {
+        StopAllCoroutines();
+        StartCoroutine(StunRoutine(duration));
+    }
+    System.Collections.IEnumerator StunRoutine(float duration)
+    {
+        stunned = true;
+
+        HideIndicator();
+
+        yield return new WaitForSeconds(duration);
+
+        stunned = false;
+    }
     void Update()
         {
+            if (stunned)
+            return;
             bool canSeePlayer = DetectPlayer();
 
             if (canSeePlayer)
