@@ -11,11 +11,13 @@ public class PlayerController : MonoBehaviour
     public LayerMask obstacleLayers;
     public Transform aoePreview;
     public float oxygenRadius = 2f;
+    
 
     public GameObject oxygenGustPrefab;
     public GameObject hydrogenExplosionPrefab;
 
     public float hydrogenTargetRadius = 2f;
+    public float hydrogenExplosionRadius = 4f;
 
     private Vector2 move;
     private Animator animator;
@@ -121,8 +123,7 @@ public class PlayerController : MonoBehaviour
                 finalTarget = hit.point - direction * 0.2f;
             }
             aimTarget.position = finalTarget;
-            aoePreview.position =
-            finalTarget + Vector3.up * 0.02f;
+            UpdateAoEPreview();
 
             float previewRadius = oxygenRadius;
 
@@ -130,13 +131,6 @@ public class PlayerController : MonoBehaviour
             {
                 previewRadius = hydrogenTargetRadius;
             }
-
-            aoePreview.localScale =
-                new Vector3(
-                    previewRadius * 2f,
-                    0.01f,
-                    previewRadius * 2f
-                );
             
             if (direction.sqrMagnitude > 0.01f)
             {
@@ -227,6 +221,96 @@ public class PlayerController : MonoBehaviour
                 CardManager.Instance.ClearSelection();
                 
                 break;
+            case CardType.Water:
+
+                CastWater();
+
+                CardManager.Instance.ClearSelection();
+
+                break;
+        }
+    }
+    TorchObject FindTorchAtAim()
+    {
+        Collider[] hits =
+            Physics.OverlapSphere(
+                aimTarget.position,
+                hydrogenTargetRadius
+            );
+
+        foreach (Collider hit in hits)
+        {
+            TorchObject torch =
+                hit.GetComponentInParent<TorchObject>();
+
+            if (torch != null)
+            {
+                return torch;
+            }
+        }
+
+        return null;
+    }
+    void UpdateAoEPreview()
+    {
+        if (aoePreview == null)
+            return;
+
+        CardType card =
+            CardManager.Instance.selectedCard;
+
+        if (card == CardType.Oxygen)
+        {
+            aoePreview.gameObject.SetActive(true);
+
+            aoePreview.position =
+                aimTarget.position + Vector3.up * 0.02f;
+
+            aoePreview.localScale =
+                new Vector3(
+                    oxygenRadius * 2f,
+                    0.01f,
+                    oxygenRadius * 2f
+                );
+        }
+        else if (card == CardType.Hydrogen || card == CardType.Water)
+        {
+            TorchObject torch = FindTorchAtAim();
+
+            if (torch != null)
+            {
+                aoePreview.gameObject.SetActive(true);
+
+                aoePreview.position =
+                    torch.transform.position +
+                    Vector3.up * 0.02f;
+
+                aoePreview.localScale =
+                    new Vector3(
+                        hydrogenExplosionRadius * 2f,
+                        0.01f,
+                        hydrogenExplosionRadius * 2f
+                    );
+            }
+            else
+            {
+                aoePreview.gameObject.SetActive(false);
+            }
+        }
+        else
+        {
+            aoePreview.gameObject.SetActive(false);
+        }
+    }
+
+    // Area da Agua
+    void CastWater()
+    {
+        TorchObject torch = FindTorchAtAim();
+
+        if (torch != null)
+        {
+            torch.Extinguish();
         }
     }
 }

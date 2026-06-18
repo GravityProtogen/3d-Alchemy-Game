@@ -5,6 +5,7 @@ public class EnemyPatrol : MonoBehaviour
 {
     public Transform[] patrolPoints;
 
+    bool stunned = false;
     public float rotationSpeed = 180f;
     public float turnThreshold = 5f;
     public float moveSpeed = 3f;
@@ -19,6 +20,10 @@ public class EnemyPatrol : MonoBehaviour
 
     void Update()
     {
+        if (stunned)
+        {
+            return;
+        }
         if (distracted)
         {
             LookAtDistraction();
@@ -132,5 +137,9 @@ public class EnemyPatrol : MonoBehaviour
             targetRotation,
             rotationSpeed * Time.deltaTime
         );
+    }
+    public void SetStunned(bool value)
+    {
+        stunned = value;
     }
 }

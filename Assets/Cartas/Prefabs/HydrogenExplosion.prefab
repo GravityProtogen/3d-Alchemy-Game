@@ -159,3 +159,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::HydrogenExplosion
   radius: 4
   stunDuration: 4
+  visual: {fileID: 2123788402670251123}

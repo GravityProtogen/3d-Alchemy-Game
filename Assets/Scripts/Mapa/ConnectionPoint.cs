@@ -14,11 +14,6 @@ public class ConnectionPoint : MonoBehaviour
 
     private void OnValidate()
     {
-        Debug.Log(
-            gameObject.name +
-            " Direction = " +
-            direction
-        );
     }
 
     private void OnDrawGizmos()

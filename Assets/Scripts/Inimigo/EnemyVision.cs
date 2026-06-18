@@ -3,6 +3,8 @@ using TMPro;
 
 public class EnemyVision : MonoBehaviour
 {
+    public GameObject visionCone;
+    private EnemyPatrol patrol;
     bool stunned = false;
     Vector3 originalScale;
     public TMP_Text alertText;
@@ -32,8 +34,31 @@ public class EnemyVision : MonoBehaviour
 
         HideIndicator();
 
+        ShowStunned();
+
+        if (visionCone != null)
+        {
+            visionCone.SetActive(false);
+        }
+
+        if (patrol != null)
+        {
+            patrol.SetStunned(true);
+        }
+
         yield return new WaitForSeconds(duration);
 
+        if (visionCone != null)
+        {
+            visionCone.SetActive(true);
+        }
+
+        if (patrol != null)
+        {
+            patrol.SetStunned(false);
+        }
+
+        HideIndicator();
         stunned = false;
     }
     void Update()
@@ -182,6 +207,8 @@ public class EnemyVision : MonoBehaviour
     void Start()
     {
         originalScale = alertText.transform.localScale;
+
+        patrol = GetComponent<EnemyPatrol>();
     }
     void UpdateIndicator()
     {
@@ -210,4 +237,16 @@ public class EnemyVision : MonoBehaviour
                 Camera.main.transform.forward;
         }
     }
+    void ShowStunned()
+    {
+        alertText.gameObject.SetActive(true);
+
+        alertText.text = "%";
+
+        alertText.color = Color.cyan;
+
+        alertText.transform.localScale =
+            originalScale * 1.5f;
+    }
+
 }

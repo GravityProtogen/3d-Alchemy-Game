@@ -248,9 +248,5 @@ public class DungeonBuilderEditor : Editor
 
         corridor.transform.position += delta;
 
-        Debug.Log(
-            "Snapped using: " +
-            corridorConnection.name
-        );
     }
 }
