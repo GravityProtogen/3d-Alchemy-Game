@@ -3,6 +3,18 @@ using UnityEngine.InputSystem;
 
 public class PlayerController : MonoBehaviour
 {
+    //Sound
+    [Header("Footsteps")]
+    public AudioSource footstepSource;
+    public AudioClip footstepClip;
+
+    [Header("Card SFX")]
+    public AudioSource sfxSource;
+
+    public AudioClip oxygenClip;
+    public AudioClip hydrogenClip;
+    public AudioClip waterClip;
+
     //Aiming
     public float speed;
     public Transform aimTarget;
@@ -187,13 +199,14 @@ public class PlayerController : MonoBehaviour
 
             if (torch != null)
             {
-                Debug.Log("TORCH FOUND!");
+                Debug.Log("achou tocha");
 
                 Instantiate(
                     hydrogenExplosionPrefab,
                     torch.transform.position,
                     Quaternion.identity
                 );
+                PlaySFX(hydrogenClip);
 
                 break;
             }
@@ -211,22 +224,23 @@ public class PlayerController : MonoBehaviour
                     Quaternion.identity
                 );
 
-                CardManager.Instance.ClearSelection();
+                PlaySFX(oxygenClip);
 
+                CardManager.Instance.ClearSelection();
                 break;
+
             case CardType.Hydrogen:
 
                 CastHydrogen();
 
                 CardManager.Instance.ClearSelection();
-                
                 break;
+
             case CardType.Water:
 
                 CastWater();
 
                 CardManager.Instance.ClearSelection();
-
                 break;
         }
     }
@@ -311,6 +325,23 @@ public class PlayerController : MonoBehaviour
         if (torch != null)
         {
             torch.Extinguish();
+            PlaySFX(waterClip);
         }
+    }
+    public void PlayFootstep()
+    {
+        Debug.Log("Footstep event triggered");
+
+        if (footstepClip != null && footstepSource != null)
+        {
+            footstepSource.PlayOneShot(footstepClip);
+        }
+    }
+    void PlaySFX(AudioClip clip)
+    {
+        if (clip == null || sfxSource == null)
+            return;
+
+        sfxSource.PlayOneShot(clip);
     }
 }
