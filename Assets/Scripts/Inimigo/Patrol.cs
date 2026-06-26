@@ -5,6 +5,7 @@ public class EnemyPatrol : MonoBehaviour
 {
     public Transform[] patrolPoints;
 
+    Animator animator;
     bool stunned = false;
     public float rotationSpeed = 180f;
     public float turnThreshold = 5f;
@@ -18,8 +19,19 @@ public class EnemyPatrol : MonoBehaviour
 
     bool waiting = false;
 
+    void Start()
+    {
+        animator = GetComponentInChildren<Animator>();
+    }
     void Update()
     {
+        float animationValue = 0f;
+        if (!stunned && !distracted && !waiting)
+        {
+            animationValue = 1f;
+        }
+
+        animator.SetFloat("Blend", animationValue);
         if (stunned)
         {
             return;
