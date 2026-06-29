@@ -153,6 +153,8 @@ public class EnemyVision : MonoBehaviour
     {
         ShowExclamationMark();
 
+        GameManager.Instance.GameOver();
+
         Debug.Log("PLAYER DETECTED!");
 
     }
