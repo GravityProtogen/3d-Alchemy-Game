@@ -71,6 +71,8 @@ public class EnemyVision : MonoBehaviour
             {
                 currentDetection += Time.deltaTime;
 
+                patrol.StartTracking(player);
+
                 if (!playerAlreadyDetected)
                 {
                     ShowQuestionMark();
@@ -85,6 +87,8 @@ public class EnemyVision : MonoBehaviour
             }
             else
             {
+                patrol.StopTracking();
+                
                 currentDetection -= Time.deltaTime;
 
                 if (currentDetection < 0)

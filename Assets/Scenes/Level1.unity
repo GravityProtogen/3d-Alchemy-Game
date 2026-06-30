@@ -1830,6 +1830,7 @@ GameObject:
   - component: {fileID: 443572364}
   - component: {fileID: 443572365}
   - component: {fileID: 443572366}
+  - component: {fileID: 443572367}
   m_Layer: 0
   m_Name: Enemy
   m_TagString: Untagged
@@ -1897,6 +1898,29 @@ MonoBehaviour:
   obstacleMask:
     serializedVersion: 2
     m_Bits: 192
+--- !u!136 &443572367
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 443572363}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.5
+  m_Height: 2.8052707
+  m_Direction: 1
+  m_Center: {x: 0, y: 0.14919281, z: 0}
 --- !u!114 &478008636 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: -963611083308877934, guid: 4220df46fe7830e41a39525cd435f357, type: 3}
@@ -3627,9 +3651,9 @@ RectTransform:
   m_LocalScale: {x: 0, y: 0, z: 0}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 82003352}
   - {fileID: 309308572}
   - {fileID: 953560439}
-  - {fileID: 82003352}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}

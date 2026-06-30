@@ -16,12 +16,10 @@ public class CardManager : MonoBehaviour
         if (selectedCard == card)
         {
             selectedCard = CardType.None;
-            Debug.Log("Deselected: " + card);
             return;
         }
 
         selectedCard = card;
-        Debug.Log("Selected: " + card);
     }
     public void ClearSelection()
     {

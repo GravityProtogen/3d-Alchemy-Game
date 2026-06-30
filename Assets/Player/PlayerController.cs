@@ -330,7 +330,6 @@ public class PlayerController : MonoBehaviour
     }
     public void PlayFootstep()
     {
-        Debug.Log("Footstep event triggered");
 
         if (footstepClip != null && footstepSource != null)
         {

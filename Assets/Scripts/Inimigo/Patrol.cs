@@ -6,6 +6,8 @@ public class EnemyPatrol : MonoBehaviour
     public Transform[] patrolPoints;
 
     Animator animator;
+    bool trackingPlayer = false;
+    Transform trackedPlayer;
     bool stunned = false;
     public float rotationSpeed = 180f;
     public float turnThreshold = 5f;
@@ -26,7 +28,7 @@ public class EnemyPatrol : MonoBehaviour
     void Update()
     {
         float animationValue = 0f;
-        if (!stunned && !distracted && !waiting)
+        if (!stunned && !distracted && !waiting && !trackingPlayer)
         {
             animationValue = 1f;
         }
@@ -34,6 +36,11 @@ public class EnemyPatrol : MonoBehaviour
         animator.SetFloat("Blend", animationValue);
         if (stunned)
         {
+            return;
+        }
+        if (trackingPlayer)
+        {
+            LookAtPlayer();
             return;
         }
         if (distracted)
@@ -153,5 +160,41 @@ public class EnemyPatrol : MonoBehaviour
     public void SetStunned(bool value)
     {
         stunned = value;
+    }
+    public void StartTracking(Transform player)
+    {
+        if (trackingPlayer && trackedPlayer == player)
+            return;
+
+        trackingPlayer = true;
+        trackedPlayer = player;
+    }
+
+    public void StopTracking()
+    {
+        trackingPlayer = false;
+        trackedPlayer = null;
+    }
+    void LookAtPlayer()
+    {
+        if (trackedPlayer == null)
+            return;
+
+        Vector3 direction =
+            trackedPlayer.position - transform.position;
+
+        direction.y = 0;
+
+        if (direction.sqrMagnitude < 0.01f)
+            return;
+
+        Quaternion targetRotation =
+            Quaternion.LookRotation(direction);
+
+        transform.rotation = Quaternion.RotateTowards(
+            transform.rotation,
+            targetRotation,
+            rotationSpeed * Time.deltaTime
+        );
     }
 }

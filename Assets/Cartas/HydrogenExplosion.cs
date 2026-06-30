@@ -15,6 +15,12 @@ public class HydrogenExplosion : MonoBehaviour
                 transform.position,
                 radius
             );
+        Debug.Log("Hits: " + hits.Length);
+
+        foreach (Collider c in hits)
+        {
+            Debug.Log(c.name);
+        }
 
         foreach (Collider hit in hits)
         {
